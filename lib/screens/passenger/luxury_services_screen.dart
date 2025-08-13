@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/luxury_service_provider.dart';
 import '../../models/luxury_service_model.dart';
+import '../../models/vip_membership_model.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/custom_button.dart';
 
 class LuxuryServicesScreen extends StatefulWidget {
   const LuxuryServicesScreen({super.key});
@@ -12,384 +14,489 @@ class LuxuryServicesScreen extends StatefulWidget {
   State<LuxuryServicesScreen> createState() => _LuxuryServicesScreenState();
 }
 
-class _LuxuryServicesScreenState extends State<LuxuryServicesScreen> {
-  String selectedCategory = 'All';
-  final List<String> categories = ['All', 'Transport', 'Concierge', 'Security', 'VIP'];
+class _LuxuryServicesScreenState extends State<LuxuryServicesScreen>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+  int _selectedServiceIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          // Luxury App Bar
-          SliverAppBar(
-            expandedHeight: 200,
-            floating: false,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'Luxury Services',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 10.0,
-                      color: Colors.black54,
-                      offset: Offset(2.0, 2.0),
-                    ),
-                  ],
-                ),
-              ),
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: AppTheme.goldGradient,
-                ),
-                child: Stack(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppTheme.darkGradient,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              _buildMembershipCard(),
+              _buildTabBar(),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
                   children: [
-                    Positioned(
-                      right: -50,
-                      top: 50,
-                      child: Icon(
-                        Icons.diamond,
-                        size: 150,
-                        color: Colors.white.withOpacity(0.1),
-                      ),
-                    ),
-                    const Positioned(
-                      left: 20,
-                      bottom: 80,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Premium',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            'Experiences',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildConciergeServices(),
+                    _buildExclusiveExperiences(),
+                    _buildPersonalServices(),
                   ],
                 ),
               ),
-            ),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => context.go('/passenger/home'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(
+              Icons.arrow_back,
+              color: Colors.white,
             ),
           ),
-
-          // VIP Membership Card
-          SliverToBoxAdapter(
-            child: Consumer<LuxuryServiceProvider>(
-              builder: (context, provider, _) {
-                final membership = provider.userMembership;
-                if (membership == null) return const SizedBox.shrink();
-
-                return Container(
-                  margin: const EdgeInsets.all(16),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        membership.tierColor,
-                        membership.tierColor.withOpacity(0.8),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: membership.tierColor.withOpacity(0.3),
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.diamond,
-                            color: membership.tier == MembershipTier.black 
-                                ? Colors.white 
-                                : Colors.black,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            membership.tierDisplayName,
-                            style: TextStyle(
-                              color: membership.tier == MembershipTier.black 
-                                  ? Colors.white 
-                                  : Colors.black,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Spacer(),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              'ACTIVE',
-                              style: TextStyle(
-                                color: membership.tier == MembershipTier.black 
-                                    ? Colors.white 
-                                    : Colors.black,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Credit Balance',
-                                  style: TextStyle(
-                                    color: membership.tier == MembershipTier.black 
-                                        ? Colors.white70 
-                                        : Colors.black54,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                Text(
-                                  '\$${membership.creditBalance.toStringAsFixed(0)}',
-                                  style: TextStyle(
-                                    color: membership.tier == MembershipTier.black 
-                                        ? Colors.white 
-                                        : Colors.black,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Free Rides Left',
-                                  style: TextStyle(
-                                    color: membership.tier == MembershipTier.black 
-                                        ? Colors.white70 
-                                        : Colors.black54,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                Text(
-                                  membership.freeRidesPerMonth > 100 
-                                      ? 'Unlimited' 
-                                      : '${membership.freeRidesPerMonth}',
-                                  style: TextStyle(
-                                    color: membership.tier == MembershipTier.black 
-                                        ? Colors.white 
-                                        : Colors.black,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-
-          // Category Filter
-          SliverToBoxAdapter(
-            child: Container(
-              height: 50,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  final isSelected = selectedCategory == category;
-                  
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: FilterChip(
-                      label: Text(category),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          selectedCategory = category;
-                        });
-                      },
-                      selectedColor: AppTheme.accentColor.withOpacity(0.2),
-                      checkmarkColor: AppTheme.accentColor,
-                      labelStyle: TextStyle(
-                        color: isSelected ? AppTheme.accentColor : Colors.grey[600],
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                  );
-                },
+          const SizedBox(width: 16),
+          const Expanded(
+            child: Text(
+              'Luxury Services',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
           ),
-
-          // Services Grid
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: Consumer<LuxuryServiceProvider>(
-              builder: (context, provider, _) {
-                final services = provider.availableServices;
-                
-                return SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.8,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final service = services[index];
-                      return _LuxuryServiceCard(service: service);
-                    },
-                    childCount: services.length,
-                  ),
-                );
-              },
+          IconButton(
+            onPressed: () {
+              // TODO: Show service history
+            },
+            icon: const Icon(
+              Icons.history,
+              color: Colors.white,
             ),
           ),
         ],
       ),
     );
   }
-}
 
-class _LuxuryServiceCard extends StatelessWidget {
-  final LuxuryService service;
+  Widget _buildMembershipCard() {
+    return Consumer<LuxuryServiceProvider>(
+      builder: (context, provider, child) {
+        final membership = provider.currentMembership;
+        if (membership == null) {
+          return _buildUpgradeMembershipCard();
+        }
 
-  const _LuxuryServiceCard({required this.service});
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                membership.tierColor.withOpacity(0.8),
+                membership.tierColor,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: membership.tier == MembershipTier.black
+                    ? Colors.black.withOpacity(0.3)
+                    : membership.tierColor.withOpacity(0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    membership.tierIcon,
+                    color: membership.tier == MembershipTier.black
+                        ? Colors.white
+                        : Colors.black,
+                    size: 32,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          membership.tierName,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: membership.tier == MembershipTier.black
+                                ? Colors.white
+                                : Colors.black,
+                          ),
+                        ),
+                        Text(
+                          'Priority Level ${membership.priorityLevel}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: membership.tier == MembershipTier.black
+                                ? Colors.white70
+                                : Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: membership.tier == MembershipTier.black
+                          ? Colors.white.withOpacity(0.2)
+                          : Colors.black.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${membership.discountPercentage.toInt()}% OFF',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: membership.tier == MembershipTier.black
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Available Services: ${membership.benefits.length}',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: membership.tier == MembershipTier.black
+                      ? Colors.white
+                      : Colors.black,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildUpgradeMembershipCard() {
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: AppTheme.goldGradient,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            color: AppTheme.accentColor.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.diamond,
+            color: Colors.white,
+            size: 48,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Upgrade to VIP',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Unlock exclusive luxury services and premium benefits',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white70,
+            ),
+          ),
+          const SizedBox(height: 16),
+          LuxuryButton(
+            text: 'Upgrade Now',
+            onPressed: () {
+              // TODO: Navigate to membership upgrade
+            },
+            icon: Icons.upgrade,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    return Container(
+      margin: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        indicator: BoxDecoration(
+          gradient: AppTheme.goldGradient,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white60,
+        labelStyle: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+        ),
+        tabs: const [
+          Tab(text: 'Concierge'),
+          Tab(text: 'Experiences'),
+          Tab(text: 'Personal'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConciergeServices() {
+    final services = [
+      {
+        'title': 'Personal Concierge',
+        'subtitle': '24/7 luxury assistance',
+        'icon': Icons.support_agent,
+        'price': '\$50/hour',
+        'description': 'Dedicated personal assistant for all your needs',
+      },
+      {
+        'title': 'Restaurant Reservations',
+        'subtitle': 'Exclusive dining experiences',
+        'icon': Icons.restaurant,
+        'price': '\$25/booking',
+        'description': 'Priority reservations at Michelin-starred restaurants',
+      },
+      {
+        'title': 'Event Planning',
+        'subtitle': 'Luxury event coordination',
+        'icon': Icons.event,
+        'price': '\$200/event',
+        'description': 'Complete planning for special occasions',
+      },
+      {
+        'title': 'Travel Planning',
+        'subtitle': 'Bespoke travel experiences',
+        'icon': Icons.flight_takeoff,
+        'price': '\$150/trip',
+        'description': 'Customized luxury travel itineraries',
+      },
+    ];
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(24),
+      itemCount: services.length,
+      itemBuilder: (context, index) {
+        final service = services[index];
+        return _buildServiceCard(service, index);
+      },
+    );
+  }
+
+  Widget _buildExclusiveExperiences() {
+    final experiences = [
+      {
+        'title': 'Private Yacht Charter',
+        'subtitle': 'Luxury maritime experience',
+        'icon': Icons.directions_boat,
+        'price': '\$2,500/day',
+        'description': 'Exclusive yacht charter with crew and catering',
+      },
+      {
+        'title': 'Helicopter Tours',
+        'subtitle': 'Aerial luxury sightseeing',
+        'icon': Icons.flight_takeoff,
+        'price': '\$800/hour',
+        'description': 'Private helicopter tours with professional pilot',
+      },
+      {
+        'title': 'Private Jet Access',
+        'subtitle': 'On-demand aviation',
+        'icon': Icons.airplanemode_active,
+        'price': '\$5,000/flight',
+        'description': 'Access to private jet fleet for instant travel',
+      },
+      {
+        'title': 'Exclusive Events',
+        'subtitle': 'VIP access to premium events',
+        'icon': Icons.stars,
+        'price': 'Varies',
+        'description': 'Priority access to exclusive galas and premieres',
+      },
+    ];
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(24),
+      itemCount: experiences.length,
+      itemBuilder: (context, index) {
+        final experience = experiences[index];
+        return _buildServiceCard(experience, index);
+      },
+    );
+  }
+
+  Widget _buildPersonalServices() {
+    final services = [
+      {
+        'title': 'Personal Shopper',
+        'subtitle': 'Luxury shopping assistance',
+        'icon': Icons.shopping_bag,
+        'price': '\$100/session',
+        'description': 'Personal shopping at high-end boutiques',
+      },
+      {
+        'title': 'Home Services',
+        'subtitle': 'Premium household management',
+        'icon': Icons.home,
+        'price': '\$75/hour',
+        'description': 'Professional home cleaning and organization',
+      },
+      {
+        'title': 'Personal Chef',
+        'subtitle': 'Private culinary experiences',
+        'icon': Icons.restaurant_menu,
+        'price': '\$300/meal',
+        'description': 'Michelin-trained chefs for private dining',
+      },
+      {
+        'title': 'Wellness Services',
+        'subtitle': 'Premium health and beauty',
+        'icon': Icons.spa,
+        'price': '\$200/session',
+        'description': 'In-home spa and wellness treatments',
+      },
+    ];
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(24),
+      itemCount: services.length,
+      itemBuilder: (context, index) {
+        final service = services[index];
+        return _buildServiceCard(service, index);
+      },
+    );
+  }
+
+  Widget _buildServiceCard(Map<String, dynamic> service, int index) {
+    final isSelected = _selectedServiceIndex == index;
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
           onTap: () {
-            _showServiceDetails(context, service);
+            setState(() {
+              _selectedServiceIndex = index;
+            });
+            _showServiceDetails(service);
           },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isSelected 
+                  ? Colors.white.withOpacity(0.15)
+                  : Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected 
+                    ? AppTheme.accentColor
+                    : Colors.white.withOpacity(0.1),
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Row(
               children: [
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
                     gradient: AppTheme.goldGradient,
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(
-                    _getServiceIcon(service.type),
+                    service['icon'] as IconData,
                     color: Colors.white,
-                    size: 24,
+                    size: 28,
                   ),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  service.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  service.description,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const Spacer(),
-                Row(
-                  children: [
-                    Text(
-                      'From \$${service.basePrice.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.accentColor,
-                      ),
-                    ),
-                    const Spacer(),
-                    if (service.requiresAdvanceBooking)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.orange[100],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${service.minAdvanceHours}h',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.orange[800],
-                            fontWeight: FontWeight.bold,
-                          ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        service['title'] as String,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        service['subtitle'] as String,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white.withOpacity(0.7),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        service['price'] as String,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.accentColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  isSelected ? Icons.check_circle : Icons.arrow_forward_ios,
+                  color: isSelected ? AppTheme.accentColor : Colors.white54,
+                  size: 20,
                 ),
               ],
             ),
@@ -399,201 +506,140 @@ class _LuxuryServiceCard extends StatelessWidget {
     );
   }
 
-  IconData _getServiceIcon(LuxuryServiceType type) {
-    switch (type) {
-      case LuxuryServiceType.concierge:
-        return Icons.support_agent;
-      case LuxuryServiceType.personalShopper:
-        return Icons.shopping_bag;
-      case LuxuryServiceType.eventPlanning:
-        return Icons.event;
-      case LuxuryServiceType.businessMeeting:
-        return Icons.business_center;
-      case LuxuryServiceType.airportVip:
-        return Icons.flight;
-      case LuxuryServiceType.redCarpet:
-        return Icons.star;
-      case LuxuryServiceType.privateJet:
-        return Icons.airplanemode_active;
-      case LuxuryServiceType.yacht:
-        return Icons.directions_boat;
-      case LuxuryServiceType.helicopter:
-        return Icons.helicopter;
-      case LuxuryServiceType.bodyguard:
-        return Icons.security;
-      case LuxuryServiceType.interpreter:
-        return Icons.translate;
-      case LuxuryServiceType.photographer:
-        return Icons.camera_alt;
-    }
-  }
-
-  void _showServiceDetails(BuildContext context, LuxuryService service) {
+  void _showServiceDetails(Map<String, dynamic> service) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        maxChildSize: 0.9,
-        minChildSize: 0.5,
-        builder: (context, scrollController) {
-          return Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: SingleChildScrollView(
-              controller: scrollController,
-              padding: const EdgeInsets.all(20),
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          gradient: AppTheme.goldGradient,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Icon(
-                          _getServiceIcon(service.type),
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              service.name,
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'From \$${service.basePrice.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                color: AppTheme.accentColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 24),
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.goldGradient,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Icon(
+                      service['icon'] as IconData,
+                      color: Colors.white,
+                      size: 40,
+                    ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   Text(
-                    'Description',
+                    service['title'] as String,
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryColor,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    service.description,
+                    service['description'] as String,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[600],
-                      height: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Inclusions',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  ...service.inclusions.map((inclusion) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.check_circle,
-                          color: Colors.green,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            inclusion,
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ),
-                      ],
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                  )),
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _bookService(context, service);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.accentColor,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        service.requiresAdvanceBooking 
-                            ? 'Schedule Service' 
-                            : 'Book Now',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    child: Text(
+                      service['price'] as String,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.accentColor,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          );
-        },
+            const Spacer(),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  LuxuryButton(
+                    text: 'Book Service',
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _bookService(service);
+                    },
+                    icon: Icons.calendar_today,
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  void _bookService(BuildContext context, LuxuryService service) {
-    // Show booking confirmation
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Service Booked'),
-        content: Text('Your ${service.name} has been scheduled successfully.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
+  void _bookService(Map<String, dynamic> service) {
+    // TODO: Implement service booking
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Booking ${service['title']}...'),
+        backgroundColor: AppTheme.successColor,
       ),
     );
+  }
+
+  IconData _getServiceIcon(String serviceName) {
+    switch (serviceName.toLowerCase()) {
+      case 'helicopter':
+        return Icons.flight_takeoff; // Using flight_takeoff instead of helicopter
+      case 'yacht':
+        return Icons.directions_boat;
+      case 'jet':
+        return Icons.airplanemode_active;
+      case 'concierge':
+        return Icons.support_agent;
+      default:
+        return Icons.star;
+    }
   }
 }

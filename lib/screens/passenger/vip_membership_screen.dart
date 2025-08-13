@@ -290,7 +290,7 @@ class _CurrentMembershipCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final daysLeft = membership.endDate.difference(DateTime.now()).inDays;
+    final daysLeft = membership.endDate?.difference(DateTime.now()).inDays ?? 0;
     
     return Container(
       margin: const EdgeInsets.all(16),
@@ -339,7 +339,7 @@ class _CurrentMembershipCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Active until ${_formatDate(membership.endDate)}',
+                      'Active until ${membership.endDate != null ? _formatDate(membership.endDate!) : 'N/A'}',
                       style: TextStyle(
                         color: membership.tier == MembershipTier.black 
                             ? Colors.white70 

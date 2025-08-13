@@ -15,6 +15,7 @@ class LuxuryServiceProvider extends ChangeNotifier {
   VipMembership? get userMembership => _userMembership;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  VipMembership? get currentMembership => _userMembership;
 
   LuxuryServiceProvider() {
     _initializeLuxuryServices();
@@ -202,7 +203,6 @@ class LuxuryServiceProvider extends ChangeNotifier {
       tier: MembershipTier.diamond,
       startDate: DateTime.now().subtract(const Duration(days: 30)),
       endDate: DateTime.now().add(const Duration(days: 335)),
-      annualFee: 5000.0,
       benefits: [
         'Priority booking',
         'Personal concierge',
@@ -212,12 +212,16 @@ class LuxuryServiceProvider extends ChangeNotifier {
         '24/7 support'
       ],
       discountPercentage: 15.0,
+      priorityLevel: 2,
+      metadata: const {},
+      annualFee: 5000.0,
       hasPersonalConcierge: true,
       hasPriorityBooking: true,
       hasAirportLounge: true,
       hasFreeCancellation: true,
       freeRidesPerMonth: 5,
       creditBalance: 1250.0,
+      isActive: true,
     );
   }
 
@@ -257,9 +261,12 @@ class LuxuryServiceProvider extends ChangeNotifier {
           tier: newTier,
           startDate: DateTime.now(),
           endDate: DateTime.now().add(const Duration(days: 365)),
-          annualFee: _getAnnualFeeForTier(newTier),
           benefits: _getBenefitsForTier(newTier),
           discountPercentage: _getDiscountForTier(newTier),
+          priorityLevel: _userMembership!.priorityLevel,
+          metadata: _userMembership!.metadata,
+          isActive: true,
+          annualFee: _getAnnualFeeForTier(newTier),
           hasPersonalConcierge: newTier.index >= MembershipTier.diamond.index,
           hasPriorityBooking: true,
           hasAirportLounge: newTier.index >= MembershipTier.diamond.index,

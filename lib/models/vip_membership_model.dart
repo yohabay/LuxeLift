@@ -1,8 +1,10 @@
+import 'package:flutter/material.dart';
+
 enum MembershipTier {
   platinum,
   diamond,
   black,
-  royal
+  royal,
 }
 
 class VipMembership {
@@ -10,37 +12,81 @@ class VipMembership {
   final String userId;
   final MembershipTier tier;
   final DateTime startDate;
-  final DateTime endDate;
-  final double annualFee;
+  final DateTime? endDate;
+  final bool isActive;
   final List<String> benefits;
   final double discountPercentage;
+  final int priorityLevel;
+  final Map<String, dynamic> metadata;
+  final double annualFee;
+  final double creditBalance;
+  final int freeRidesPerMonth;
   final bool hasPersonalConcierge;
   final bool hasPriorityBooking;
   final bool hasAirportLounge;
   final bool hasFreeCancellation;
-  final int freeRidesPerMonth;
-  final double creditBalance;
-  final bool isActive;
 
-  VipMembership({
+  const VipMembership({
     required this.id,
     required this.userId,
     required this.tier,
     required this.startDate,
-    required this.endDate,
-    required this.annualFee,
+    this.endDate,
+    required this.isActive,
     required this.benefits,
     required this.discountPercentage,
-    this.hasPersonalConcierge = false,
-    this.hasPriorityBooking = false,
-    this.hasAirportLounge = false,
-    this.hasFreeCancellation = false,
-    this.freeRidesPerMonth = 0,
-    this.creditBalance = 0.0,
-    this.isActive = true,
+    required this.priorityLevel,
+    required this.metadata,
+    required this.annualFee,
+    required this.creditBalance,
+    required this.freeRidesPerMonth,
+    required this.hasPersonalConcierge,
+    required this.hasPriorityBooking,
+    required this.hasAirportLounge,
+    required this.hasFreeCancellation,
   });
 
-  String get tierDisplayName {
+  VipMembership copyWith({
+    String? id,
+    String? userId,
+    MembershipTier? tier,
+    DateTime? startDate,
+    DateTime? endDate,
+    bool? isActive,
+    List<String>? benefits,
+    double? discountPercentage,
+    int? priorityLevel,
+    Map<String, dynamic>? metadata,
+    double? annualFee,
+    double? creditBalance,
+    int? freeRidesPerMonth,
+    bool? hasPersonalConcierge,
+    bool? hasPriorityBooking,
+    bool? hasAirportLounge,
+    bool? hasFreeCancellation,
+  }) {
+    return VipMembership(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      tier: tier ?? this.tier,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      isActive: isActive ?? this.isActive,
+      benefits: benefits ?? this.benefits,
+      discountPercentage: discountPercentage ?? this.discountPercentage,
+      priorityLevel: priorityLevel ?? this.priorityLevel,
+      metadata: metadata ?? this.metadata,
+      annualFee: annualFee ?? this.annualFee,
+      creditBalance: creditBalance ?? this.creditBalance,
+      freeRidesPerMonth: freeRidesPerMonth ?? this.freeRidesPerMonth,
+      hasPersonalConcierge: hasPersonalConcierge ?? this.hasPersonalConcierge,
+      hasPriorityBooking: hasPriorityBooking ?? this.hasPriorityBooking,
+      hasAirportLounge: hasAirportLounge ?? this.hasAirportLounge,
+      hasFreeCancellation: hasFreeCancellation ?? this.hasFreeCancellation,
+    );
+  }
+
+  String get tierName {
     switch (tier) {
       case MembershipTier.platinum:
         return 'Platinum Elite';
@@ -66,46 +112,92 @@ class VipMembership {
     }
   }
 
-  factory VipMembership.fromJson(Map<String, dynamic> json) {
-    return VipMembership(
-      id: json['id'] ?? '',
-      userId: json['userId'] ?? '',
-      tier: MembershipTier.values.firstWhere(
-        (e) => e.toString().split('.').last == json['tier'],
-        orElse: () => MembershipTier.platinum,
-      ),
-      startDate: DateTime.parse(json['startDate']),
-      endDate: DateTime.parse(json['endDate']),
-      annualFee: (json['annualFee'] ?? 0.0).toDouble(),
-      benefits: List<String>.from(json['benefits'] ?? []),
-      discountPercentage: (json['discountPercentage'] ?? 0.0).toDouble(),
-      hasPersonalConcierge: json['hasPersonalConcierge'] ?? false,
-      hasPriorityBooking: json['hasPriorityBooking'] ?? false,
-      hasAirportLounge: json['hasAirportLounge'] ?? false,
-      hasFreeCancellation: json['hasFreeCancellation'] ?? false,
-      freeRidesPerMonth: json['freeRidesPerMonth'] ?? 0,
-      creditBalance: (json['creditBalance'] ?? 0.0).toDouble(),
-      isActive: json['isActive'] ?? true,
-    );
+  String get tierDisplayName {
+    switch (tier) {
+      case MembershipTier.platinum:
+        return 'Platinum Elite';
+      case MembershipTier.diamond:
+        return 'Diamond Prestige';
+      case MembershipTier.black:
+        return 'Black Card';
+      case MembershipTier.royal:
+        return 'Royal Crown';
+    }
+  }
+
+  IconData get tierIcon {
+    switch (tier) {
+      case MembershipTier.platinum:
+        return Icons.star;
+      case MembershipTier.diamond:
+        return Icons.diamond;
+      case MembershipTier.black:
+        return Icons.credit_card;
+      case MembershipTier.royal:
+        return Icons.emoji_events;
+    }
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'userId': userId,
-      'tier': tier.toString().split('.').last,
+      'tier': tier.name,
       'startDate': startDate.toIso8601String(),
-      'endDate': endDate.toIso8601String(),
-      'annualFee': annualFee,
+      'endDate': endDate?.toIso8601String(),
+      'isActive': isActive,
       'benefits': benefits,
       'discountPercentage': discountPercentage,
+      'priorityLevel': priorityLevel,
+      'metadata': metadata,
+      'annualFee': annualFee,
+      'creditBalance': creditBalance,
+      'freeRidesPerMonth': freeRidesPerMonth,
       'hasPersonalConcierge': hasPersonalConcierge,
       'hasPriorityBooking': hasPriorityBooking,
       'hasAirportLounge': hasAirportLounge,
       'hasFreeCancellation': hasFreeCancellation,
-      'freeRidesPerMonth': freeRidesPerMonth,
-      'creditBalance': creditBalance,
-      'isActive': isActive,
     };
   }
+
+  factory VipMembership.fromJson(Map<String, dynamic> json) {
+    return VipMembership(
+      id: json['id'] as String,
+      userId: json['userId'] as String,
+      tier: MembershipTier.values.firstWhere(
+        (e) => e.name == json['tier'],
+        orElse: () => MembershipTier.platinum,
+      ),
+      startDate: DateTime.parse(json['startDate'] as String),
+      endDate: json['endDate'] != null 
+          ? DateTime.parse(json['endDate'] as String) 
+          : null,
+      isActive: json['isActive'] as bool,
+      benefits: List<String>.from(json['benefits'] as List),
+      discountPercentage: (json['discountPercentage'] as num).toDouble(),
+      priorityLevel: (json['priorityLevel'] as int),
+      metadata: Map<String, dynamic>.from(json['metadata'] as Map),
+      annualFee: (json['annualFee'] as num).toDouble(),
+      creditBalance: (json['creditBalance'] as num).toDouble(),
+      freeRidesPerMonth: (json['freeRidesPerMonth'] as int),
+      hasPersonalConcierge: (json['hasPersonalConcierge'] as bool),
+      hasPriorityBooking: (json['hasPriorityBooking'] as bool),
+      hasAirportLounge: (json['hasAirportLounge'] as bool),
+      hasFreeCancellation: (json['hasFreeCancellation'] as bool),
+    );
+  }
+
+  @override
+  String toString() {
+    return 'VipMembership(id: $id, tier: $tierName, isActive: $isActive)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is VipMembership && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 }

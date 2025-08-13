@@ -18,6 +18,9 @@ import '../screens/passenger/profile_screen.dart';
 import '../screens/passenger/notifications_screen.dart';
 import '../screens/passenger/settings_screen.dart';
 import '../screens/passenger/rewards_screen.dart';
+import '../screens/passenger/luxury_services_screen.dart';
+import '../screens/passenger/premium_vehicles_screen.dart';
+import '../screens/passenger/vip_membership_screen.dart';
 import '../screens/driver/driver_home_screen.dart';
 import '../screens/driver/driver_profile_screen.dart';
 import '../screens/driver/driver_earnings_screen.dart';
@@ -116,6 +119,19 @@ class AppRouter {
       GoRoute(
         path: '/passenger/rewards',
         builder: (context, state) => const RewardsScreen(),
+      ),
+      // New luxury routes
+      GoRoute(
+        path: '/passenger/luxury-services',
+        builder: (context, state) => const LuxuryServicesScreen(),
+      ),
+      GoRoute(
+        path: '/passenger/premium-vehicles',
+        builder: (context, state) => const PremiumVehiclesScreen(),
+      ),
+      GoRoute(
+        path: '/passenger/vip-membership',
+        builder: (context, state) => const VipMembershipScreen(),
       ),
       
       // Driver routes

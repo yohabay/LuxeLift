@@ -10,6 +10,7 @@ import 'providers/location_provider.dart';
 import 'providers/wallet_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/driver_provider.dart';
+import 'providers/luxury_service_provider.dart';
 import 'routes/app_router.dart';
 import 'theme/app_theme.dart';
 import 'services/notification_service.dart';
@@ -54,11 +55,12 @@ class LuxeLiftApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => WalletProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => DriverProvider()),
+        ChangeNotifierProvider(create: (_) => LuxuryServiceProvider()),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, authProvider, _) {
           return MaterialApp.router(
-            title: 'LuxeLift - Premium Ride Experience',
+            title: 'LuxeLift - World\'s Premier Luxury Transport',
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: ThemeMode.system,
