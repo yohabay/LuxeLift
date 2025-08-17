@@ -1,55 +1,39 @@
-import 'package:flutter/material.dart';
-
-enum UserType { passenger, driver }
-
 class User {
   final String id;
   final String name;
   final String phone;
-  final String email;
-  final UserType userType;
+  final String? email;
   final String? profileImage;
-  final bool isVerified;
-  final DateTime createdAt;
+  final String userType; // 'passenger' or 'driver'
   final double rating;
   final int totalTrips;
+  final DateTime createdAt;
 
-  const User({
+  User({
     required this.id,
     required this.name,
     required this.phone,
-    required this.email,
-    required this.userType,
+    this.email,
     this.profileImage,
-    required this.isVerified,
+    required this.userType,
+    this.rating = 0.0,
+    this.totalTrips = 0,
     required this.createdAt,
-    required this.rating,
-    required this.totalTrips,
   });
 
-  User copyWith({
-    String? id,
-    String? name,
-    String? phone,
-    String? email,
-    UserType? userType,
-    String? profileImage,
-    bool? isVerified,
-    DateTime? createdAt,
-    double? rating,
-    int? totalTrips,
-  }) {
+  factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      phone: phone ?? this.phone,
-      email: email ?? this.email,
-      userType: userType ?? this.userType,
-      profileImage: profileImage ?? this.profileImage,
-      isVerified: isVerified ?? this.isVerified,
-      createdAt: createdAt ?? this.createdAt,
-      rating: rating ?? this.rating,
-      totalTrips: totalTrips ?? this.totalTrips,
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      phone: json['phone'] ?? '',
+      email: json['email'],
+      profileImage: json['profileImage'],
+      userType: json['userType'] ?? 'passenger',
+      rating: (json['rating'] ?? 0.0).toDouble(),
+      totalTrips: json['totalTrips'] ?? 0,
+      createdAt: json['createdAt'] != null 
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
     );
   }
 
@@ -59,44 +43,35 @@ class User {
       'name': name,
       'phone': phone,
       'email': email,
-      'userType': userType.name,
       'profileImage': profileImage,
-      'isVerified': isVerified,
-      'createdAt': createdAt.toIso8601String(),
+      'userType': userType,
       'rating': rating,
       'totalTrips': totalTrips,
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 
-  factory User.fromJson(Map<String, dynamic> json) {
+  User copyWith({
+    String? id,
+    String? name,
+    String? phone,
+    String? email,
+    String? profileImage,
+    String? userType,
+    double? rating,
+    int? totalTrips,
+    DateTime? createdAt,
+  }) {
     return User(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      phone: json['phone'] as String,
-      email: json['email'] as String,
-      userType: UserType.values.firstWhere(
-        (e) => e.name == json['userType'],
-        orElse: () => UserType.passenger,
-      ),
-      profileImage: json['profileImage'] as String?,
-      isVerified: json['isVerified'] as bool? ?? false,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-      totalTrips: json['totalTrips'] as int? ?? 0,
+      id: id ?? this.id,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      email: email ?? this.email,
+      profileImage: profileImage ?? this.profileImage,
+      userType: userType ?? this.userType,
+      rating: rating ?? this.rating,
+      totalTrips: totalTrips ?? this.totalTrips,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
-
-  @override
-  String toString() {
-    return 'User(id: $id, name: $name, phone: $phone, email: $email, userType: $userType)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is User && other.id == id;
-  }
-
-  @override
-  int get hashCode => id.hashCode;
 }

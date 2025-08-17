@@ -1,88 +1,137 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 
 class AuthProvider extends ChangeNotifier {
   User? _user;
+  bool _isAuthenticated = false;
   bool _isLoading = false;
   String? _error;
   String? _phoneNumber;
-  String? _verificationId;
 
   User? get user => _user;
+  bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get phoneNumber => _phoneNumber;
-  String? get verificationId => _verificationId;
-  bool get isAuthenticated => _user != null;
 
-  Future<void> sendOTP(String phoneNumber) async {
+  AuthProvider() {
+    _checkAuthStatus();
+  }
+
+  Future<void> _checkAuthStatus() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      final userData = prefs.getString('user_data');
+
+      if (token != null && userData != null) {
+        _user = User.fromJson({
+          'id': 'mock_user_id',
+          'name': 'Test User',
+          'email': 'test@example.com',
+          'phone': '960700200',
+          'userType': 'passenger', // ✅ fixed
+          'rating': 4.5,
+          'totalTrips': 10,
+          'createdAt': DateTime.now().toIso8601String(),
+        });
+        _isAuthenticated = true;
+      }
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> sendOtp(String phoneNumber) async {
     _isLoading = true;
     _error = null;
     _phoneNumber = phoneNumber;
     notifyListeners();
 
-    try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-      
-      // Mock verification ID
-      _verificationId = 'mock_verification_id_${DateTime.now().millisecondsSinceEpoch}';
-      
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-    }
+    // Mock behavior: always succeed
+    await Future.delayed(Duration(seconds: 1)); // simulate network delay
+    _isLoading = false;
+    notifyListeners();
+    return true;
   }
 
-  Future<bool> verifyOTP(String otp) async {
+  Future<bool> verifyOtp(String phoneNumber, String otp) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
-    try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-      
-      // Mock verification - accept any 6-digit OTP
-      if (otp.length == 6) {
-        // Create mock user
-        _user = User(
-          id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-          name: _phoneNumber == '960700200' ? 'Test User' : 'John Doe',
-          phone: _phoneNumber ?? '',
-          email: 'user@example.com',
-          userType: UserType.passenger,
-          isVerified: true,
-          createdAt: DateTime.now(),
-          rating: 4.8,
-          totalTrips: 25,
-        );
-        
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      } else {
-        _error = 'Invalid OTP';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-    } catch (e) {
-      _error = e.toString();
+    await Future.delayed(Duration(seconds: 1)); // simulate network delay
+
+    // Mock Passenger
+    if (phoneNumber == '960700200' && otp == '123456') {
+      _user = User(
+        id: 'mock_user_id',
+        name: 'Test User',
+        phone: '0960700200',
+        email: 'test@example.com',
+        userType: 'passenger',
+        rating: 4.5,
+        totalTrips: 10,
+        createdAt: DateTime.now(),
+      );
+      _isAuthenticated = true;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', 'mock_auth_token');
+      await prefs.setString('user_data', _user!.toJson().toString());
+
       _isLoading = false;
       notifyListeners();
-      return false;
+      return true;
     }
+
+    // Mock Driver
+    if (phoneNumber == '960700200' && otp == '654321') {
+      _user = User(
+        id: 'mock_driver_id',
+        name: 'Test Driver',
+        phone: '960700200',
+        email: 'driver@example.com',
+        userType: 'driver',
+        rating: 4.9,
+        totalTrips: 50,
+        createdAt: DateTime.now(),
+      );
+      _isAuthenticated = true;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', 'mock_auth_token_driver');
+      await prefs.setString('user_data', _user!.toJson().toString());
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    }
+
+    // Any other OTP fails
+    _error = 'Invalid OTP';
+    _isLoading = false;
+    notifyListeners();
+    return false;
   }
 
   Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
+    await prefs.remove('user_data');
+
     _user = null;
-    _phoneNumber = null;
-    _verificationId = null;
+    _isAuthenticated = false;
     _error = null;
+    _phoneNumber = null;
+
     notifyListeners();
   }
 
@@ -91,51 +140,25 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateProfile({
-    String? name,
-    String? email,
-  }) async {
-    if (_user == null) return;
-
+  Future<bool> updateProfile({String? name, String? email}) async {
     _isLoading = true;
     notifyListeners();
 
-    try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-      
-      _user = _user!.copyWith(
-        name: name ?? _user!.name,
-        email: email ?? _user!.email,
-      );
-      
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
+    // Mock update
+    await Future.delayed(Duration(seconds: 1));
+    _user = User.fromJson({
+      'id': _user?.id ?? 'mock_user_id',
+      'name': name ?? _user?.name ?? 'Test User',
+      'email': email ?? _user?.email ?? 'test@example.com',
+      'phone': _user?.phone ?? '0960700200',
+      'userType': 'passenger', // correct
+    });
 
-  Future<void> switchUserType(UserType newType) async {
-    if (_user == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_data', _user!.toJson().toString());
 
-    _isLoading = true;
+    _isLoading = false;
     notifyListeners();
-
-    try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-      
-      _user = _user!.copyWith(userType: newType);
-      
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-    }
+    return true;
   }
 }

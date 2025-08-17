@@ -259,7 +259,7 @@ class _TripCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      trip.pickupLocation.address ?? '',
+                      trip.pickupLocation.address,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -267,7 +267,7 @@ class _TripCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      trip.dropoffLocation.address ?? '',
+                      trip.dropoffLocation.address,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
