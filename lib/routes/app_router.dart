@@ -18,6 +18,9 @@ import '../screens/passenger/profile_screen.dart';
 import '../screens/passenger/notifications_screen.dart';
 import '../screens/passenger/settings_screen.dart';
 import '../screens/passenger/rewards_screen.dart';
+import '../screens/passenger/luxury_booking_screen.dart';
+import '../screens/passenger/loyalty_rewards_screen.dart';
+import '../screens/passenger/ride_customization_screen.dart';
 import '../screens/driver/driver_home_screen.dart';
 import '../screens/driver/driver_profile_screen.dart';
 import '../screens/driver/driver_earnings_screen.dart';
@@ -80,6 +83,18 @@ class AppRouter {
       GoRoute(
         path: '/passenger/booking',
         builder: (context, state) => const BookingScreen(),
+      ),
+      GoRoute(
+        path: '/passenger/luxury-booking',
+        builder: (context, state) => const LuxuryBookingScreen(),
+      ),
+      GoRoute(
+        path: '/passenger/ride-customization',
+        builder: (context, state) => const RideCustomizationScreen(),
+      ),
+      GoRoute(
+        path: '/passenger/loyalty-rewards',
+        builder: (context, state) => const LoyaltyRewardsScreen(),
       ),
       GoRoute(
         path: '/passenger/finding-driver',

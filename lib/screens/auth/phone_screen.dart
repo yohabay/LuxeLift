@@ -46,7 +46,9 @@ class _PhoneScreenState extends State<PhoneScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/auth/welcome'),
+          onPressed:() {
+            context.pop();
+          },
         ),
         title: const Text('Enter Phone Number'),
       ),

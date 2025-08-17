@@ -34,12 +34,18 @@ class LuxuryVehicle {
   String get displayName => '$color $brand $model';
   String get categoryDisplayName {
     switch (category) {
-      case 'economy': return 'Economy';
-      case 'premium': return 'Premium';
-      case 'luxury': return 'Luxury';
-      case 'executive': return 'Executive';
-      case 'eco': return 'Eco-Friendly';
-      default: return 'Standard';
+      case 'economy':
+        return 'Economy';
+      case 'premium':
+        return 'Premium';
+      case 'luxury':
+        return 'Luxury';
+      case 'executive':
+        return 'Executive';
+      case 'eco':
+        return 'Eco-Friendly';
+      default:
+        return 'Standard';
     }
   }
 
